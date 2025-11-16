@@ -83,14 +83,12 @@ OK
 ## Project Structure
 
 ```
-internal/
-  protocol/   → lexer, parser, AST, encoder/decoder
-  storage/    → WAL, Memtable, SSTable
-  engine/     → routing + execution
-  runtime/    → reactor + worker pool
-  net/        → TCP connection handling + server
-cmd/
-  vkv/        → main entrypoint
+protocol/   → lexer, parser, AST, encoder/decoder
+storage/    → WAL, Memtable, SSTable
+engine/     → routing + execution
+runtime/    → reactor + worker pool
+net/        → TCP connection handling + server
+main.go
 ```
 
 ## Why vkv exists
