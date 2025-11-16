@@ -1,47 +1,44 @@
 package protocol
 
-// Response is the output of the engine.
-// Encoder serializes this for the client.
-type Response interface {
-	Kind() string
+import (
+    "bufio"
+    "fmt"
+)
+
+// Encoder serializes Response objects into the wire protocol.
+type Encoder struct {
+    w *bufio.Writer
 }
 
-// OK
-type RespOK struct{}
-
-func (RespOK) Kind() string { return "OK" }
-
-func ResponseOK() Response {
-	return RespOK{}
+func NewEncoder(w *bufio.Writer) *Encoder {
+    return &Encoder{w: w}
 }
 
-// Value
-type RespValue struct {
-	Value string
-}
+// Encode writes a single Response to the client.
+func (e *Encoder) Encode(resp Response) error {
+    switch r := resp.(type) {
 
-func (RespValue) Kind() string { return "VALUE" }
+    case RespOK:
+        _, err := e.w.WriteString("OK\n")
+        return err
 
-func ResponseValue(val string) Response {
-	return RespValue{Value: val}
-}
+    case RespValue:
+        // VALUE <string>
+        _, err := e.w.WriteString(fmt.Sprintf("VALUE %s\n", r.Value))
+        return err
 
-// NIL (key not found)
-type RespNil struct{}
+    case RespNil:
+        _, err := e.w.WriteString("NIL\n")
+        return err
 
-func (RespNil) Kind() string { return "NIL" }
+    case RespErr:
+        // ERR <msg>
+        _, err := e.w.WriteString(fmt.Sprintf("ERR %s\n", r.Message))
+        return err
 
-func ResponseNil() Response {
-	return RespNil{}
-}
-
-// Error
-type RespErr struct {
-	Message string
-}
-
-func (RespErr) Kind() string { return "ERR" }
-
-func ResponseErr(msg string) Response {
-	return RespErr{Message: msg}
+    default:
+        // Should never happen but just in case:
+        _, err := e.w.WriteString("ERR internal encoder error\n")
+        return err
+    }
 }

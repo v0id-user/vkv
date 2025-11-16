@@ -1,67 +1,47 @@
 package protocol
 
-import (
-	"strings"
-)
-
-func ParseTokens(tokens []Token) (Command, error) {
-	if len(tokens) == 0 {
-		return nil, NewProtocolError("no tokens to parse")
-	}
-
-	// Operation
-	op := strings.ToUpper(tokens[0].Value)
-
-	switch op {
-	case "SET":
-		// SET key value
-		if len(tokens) != 3 {
-			return nil, Errorf("SET requires exactly 2 arguments: key and value, got %d", len(tokens)-1)
-		}
-		key := tokens[1].Value
-		val := tokens[2].Value
-
-		return Set{
-			Key:   key,
-			Value: val,
-		}, nil
-	case "GET":
-		// GET key
-		if len(tokens) != 2 {
-			return nil, Errorf("GET requires exactly 1 argument: key, got %d", len(tokens)-1)
-		}
-		key := tokens[1].Value
-		if key == "" {
-			return nil, NewProtocolError("GET key cannot be empty")
-		}
-
-		return Get{
-			Key: key,
-		}, nil
-	case "DEL":
-		// DEL key
-		if len(tokens) != 2 {
-			return nil, Errorf("DEL requires exactly 1 argument: key, got %d", len(tokens)-1)
-		}
-		key := tokens[1].Value
-		if key == "" {
-			return nil, NewProtocolError("DEL key cannot be empty")
-		}
-
-		return Del{
-			Key: key,
-		}, nil
-	default:
-		return nil, Errorf("unknown command: %q", tokens[0].Value)
-	}
+// Response is the output of the engine.
+// Encoder serializes this for the client.
+type Response interface {
+	Kind() string
 }
 
-// ParseLine is a helper that does
-// raw string -> tokens -> Command in one go.
-func ParseLine(line string) (Command, error) {
-	tokens, err := Lex(line)
-	if err != nil {
-		return nil, err
-	}
-	return ParseTokens(tokens)
+// OK
+type RespOK struct{}
+
+func (RespOK) Kind() string { return "OK" }
+
+func ResponseOK() Response {
+	return RespOK{}
+}
+
+// Value
+type RespValue struct {
+	Value string
+}
+
+func (RespValue) Kind() string { return "VALUE" }
+
+func ResponseValue(val string) Response {
+	return RespValue{Value: val}
+}
+
+// NIL (key not found)
+type RespNil struct{}
+
+func (RespNil) Kind() string { return "NIL" }
+
+func ResponseNil() Response {
+	return RespNil{}
+}
+
+// Error
+type RespErr struct {
+	Message string
+}
+
+func (RespErr) Kind() string { return "ERR" }
+
+func ResponseErr(msg string) Response {
+	return RespErr{Message: msg}
 }

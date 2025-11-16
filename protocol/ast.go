@@ -28,3 +28,8 @@ type Del struct {
 }
 
 func (d Del) Kind() string { return "DEL" }
+
+type Flush struct {
+}
+
+func (f Flush) Kind() string { return "FLUSH" }

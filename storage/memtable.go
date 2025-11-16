@@ -69,3 +69,17 @@ func (m *Memtable) Del(key string) {
 	delete(b.m, key)
 	b.mu.Unlock()
 }
+
+
+func (m *Memtable) Snapshot() map[string]string {
+	out := make(map[string]string)
+	for i := range m.buckets {
+		b := m.buckets[i]
+		b.mu.RLock()
+		for k, v := range b.m {
+			out[k] = v
+		}
+		b.mu.RUnlock()
+	}
+	return out
+}

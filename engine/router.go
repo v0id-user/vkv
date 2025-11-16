@@ -1,7 +1,11 @@
 package engine
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/v0id-user/vkv/protocol"
+	"github.com/v0id-user/vkv/storage"
 )
 
 // Route dispatches a parsed Command to the correct handler on the Engine.
@@ -39,7 +43,21 @@ func Route(e *Engine, cmd protocol.Command) protocol.Response {
 		// 2) Apply deletion in memory
 		e.memtable.Del(c.Key)
 		return protocol.ResponseOK()
-
+	case protocol.Flush:
+		snapshot := e.memtable.Snapshot()
+		// Import "time" package at the top, since time is used here.
+		path := fmt.Sprintf("data/%d.sst", time.Now().UnixNano())
+		storage.BuildSSTable(path, snapshot)
+		sst, err := storage.OpenSSTable(path)
+		if err != nil {
+			return protocol.ResponseErr("failed to open SSTable")
+		}
+		e.AddSSTable(sst)
+		if e.wal != nil {
+			e.wal.Reset()
+		}
+		e.memtable = storage.NewMemtable()
+		return protocol.ResponseOK()
 	default:
 		// Should not happen, but guard.
 		return protocol.ResponseErr("unknown command")
