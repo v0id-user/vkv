@@ -95,7 +95,6 @@ main.go
 
 To learn how databases actually work:
 
-* framing
 * parsing
 * LSM trees
 * WAL durability
@@ -108,7 +107,7 @@ It’s intentionally small, readable, and hackable.
 
 ## Future Work
 
-* memtable flush daemon
+* memtable flush command
 * SSTable compaction
 * binary protocol
 * metrics + logging
@@ -118,12 +117,3 @@ It’s intentionally small, readable, and hackable.
 ---
 
 Built by #V0ID to understand the internals — not to chase benchmarks.
-
-```
-
----
-
-If you want, I can write the **cmd/vkv/main.go** next so the server actually boots.
-
-Just say:  
-**“main.go next”**
