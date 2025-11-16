@@ -107,7 +107,7 @@ It’s intentionally small, readable, and hackable.
 
 ## Future Work
 
-* memtable flush command
+* memtable flush daemon
 * SSTable compaction
 * binary protocol
 * metrics + logging
@@ -116,4 +116,4 @@ It’s intentionally small, readable, and hackable.
 
 ---
 
-Built by #V0ID to understand the internals — not to chase benchmarks.
+Built by #V0ID
