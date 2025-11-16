@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"errors"
 	"strings"
 	"unicode"
 )
@@ -9,7 +8,7 @@ import (
 // Token represents one piece of the command.
 // Example: SET, foo, bar
 type Token struct {
-    Value string
+	Value string
 }
 
 // Lex takes a full command line and returns tokens.
@@ -18,7 +17,7 @@ func Lex(command string) ([]Token, error) {
 	// Trim whitespace + newline
 	line := strings.TrimSpace(command)
 	if line == "" {
-		return nil, errors.New("empty command")
+		return nil, ErrEmptyCommand
 	}
 
 	slic := strings.Fields(line) // Using Fields to handle multiple spaces and tabs
@@ -32,7 +31,7 @@ func Lex(command string) ([]Token, error) {
 		// Validate ASCII + no control chars
 		for _, r := range element {
 			if r > 127 || unicode.IsControl(r) {
-				return nil, errors.New("invalid character in input")
+				return nil, NewProtocolError("invalid character in input")
 			}
 		}
 
